@@ -2,6 +2,8 @@
 
 This repo contains the essential Unity code scripts used to implement the HEAD-BOB, ARM-SWING, LEG-LIFT and FULL-BODY walking-in-place (WIP) methods used in the forthcoming paper on "Understanding User Experiences Across VR Walking-in-place Locomotion Methods".
 
+![](https://github.com/singaporetech/immersification-wip-locomotion/blob/main/images/locomotion-setups.jpg)
+
 The paper will be linked once it has been published.
 
 Essential details (extracted from the paper) for each algorithm are given in the subsections below. Please read the paper for more details on the science behind these implementations, as well as all the associated references that these implementations were built upon. 
