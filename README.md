@@ -16,7 +16,7 @@ Position and orientation of the VR HMD (a HTC Vive Pro) are tracked using its em
 
 ## Arm-swing Implementation
 
-The swinging action of the arms are tracked using a consumer-friendly setup that includes beacons (SteamVR Base Stations) and IMU-based tracking devices (HTC Vive Trackers) strapped to the arms. Movement direction is determined from the same motion sensors, as they are strapped in a fixed orientation relative to the user’s intended move- ment direction. This implementation is based on the assumption that users swing their arms during WIP, similar to how they would in real-life walking.
+The swinging action of the arms are tracked using a consumer-friendly setup that includes beacons (SteamVR Base Stations) and IMU-based tracking devices (HTC Vive Trackers) strapped to the arms. Movement direction is determined from the same motion sensors, as they are strapped in a fixed orientation relative to the user’s intended movement direction. This implementation is based on the assumption that users swing their arms during WIP, similar to how they would in real-life walking.
 
 ## Leg-lift Implementation
 
@@ -24,7 +24,7 @@ The lifting action of the legs are tracked using the same tracking setup but wit
 
 ## Full-body Implementation
 
-This is a combination of the Head-bob, Arm-swing and Leg-lift methods, to investigate any experiential differences provided by a sensor fusion approach. For example, one possible advantage was for users to freely look around (versus in pure Head-bob where they have to look at where they are going) while still incorporating the bobbing action tracked by the HMD for translation into walking velocities. This method collects tracked positional and orientation data from the various sensors used in all the previous methods and translate the combined averaged values to virtual speeds and directions in the virtual envi- ronment. In general, this provides another source of comparison to solicit experiential feedback from participants.
+This is a combination of the Head-bob, Arm-swing and Leg-lift methods, to investigate any experiential differences provided by a sensor fusion approach. For example, one possible advantage was for users to freely look around (versus in pure Head-bob where they have to look at where they are going) while still incorporating the bobbing action tracked by the HMD for translation into walking velocities. This method collects tracked positional and orientation data from the various sensors used in all the previous methods and translate the combined averaged values to virtual speeds and directions in the virtual environment. In general, this provides another source of comparison to solicit experiential feedback from participants.
 
 ## Other details
 
@@ -34,6 +34,6 @@ The study in the paper focuses on WIP setups that only require tracking componen
 
 # How to use the code
 
-These are Unity C# component scripts that developers can use in a Unity3D project. Currently, we do not provide an example project but it should be straightfoward for experienced Unity developers to include in their projects.
+The code in the [unity-locomotion-scripts](https://github.com/singaporetech/immersification-wip-locomotion/tree/main/unity-locomotion-scripts) folder are Unity C# component scripts that developers can use in a Unity3D project. Currently, we do not provide an example project but it should be straightforward for experienced Unity developers to include in their projects.
 
 The code can also be treated as a source of information for the implementation details of the various WIP methods discussed in the paper.
