@@ -16,114 +16,6 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
 
     public MovementManager movementManager;
 
-    /*
-    void Update()
-    {
-        // Step 3???
-        // Get dummy tracker location and assign to real tracker object
-        //------------------------------
-        // Delay one frame for the assignment of the index to sink in
-        if (sortTrackers)
-        {
-            switch(amtViveTrackers)
-            {
-                case 2: // Arms tracker only
-                    SortArmTrackers();
-
-                    // Remove assign of legs and chest
-                    AssignTrackerIndex(0, 11);
-                    AssignTrackerIndex(1, 11);
-                    AssignTrackerIndex(4, 11);
-                    break;
-                case 3: // Legs and chest trackers
-                    SortChestAndLegsTrackers();
-
-                    // Remove assign of left and right hand
-                    AssignTrackerIndex(2, 11);
-                    AssignTrackerIndex(3, 11);
-                    break;
-                case 4: // Both arms and legs trackers
-                    SortArmLegTrackers();
-
-                    // Remove assign of chest
-                    AssignTrackerIndex(4, 11);
-                    break;
-                case 5: // Both arms, legs and chest trackers
-                    SortAllTrackers();
-                    break;
-            }   
-            // Assign to the tracker objects with script
-            AssignDummyToRealTrackObject();
-
-            // Clear data and script
-            viveTrackerDeviceIndex.Clear();
-            delayFrame = false;
-            sortTrackers = false;
-            amtViveTrackers = 0;
-
-            stepTwoAllocationCompleted = true;
-            enabled = false;
-            return;
-        }
-
-        // Step 1
-        //------------------------------
-        // To use as a delay of a frame to get better value for vive tracker transforms
-        if(delayFrame)
-        {
-            sortTrackers = true;
-            return;
-        }
-
-        // Step 2
-        //------------------------------
-        // Get all tracker objects
-        // Assign to dummy/container first
-        GetAllViveTrackers();
-
-
-        // Step 2.5???
-        // Exclusive for walker input?????
-        //------------------------------
-        // If trackers == 4 indicate trackers are used instead of controller
-        if (viveTrackerDeviceIndex.Count != 0 && viveTrackerDeviceIndex.Count != 3)
-        {
-            // Switch from controller input into tracker input for both arms
-            leftHandInput.tracker = true;
-            leftHandInput.SetUpControl();
-
-            rightHandInput.tracker = true;
-            rightHandInput.SetUpControl();
-        }
-    }
-
-    // Search for all active VIVE trackers and assigns them to a dummy object
-    protected override void GetAllViveTrackers()
-    {
-        amtViveTrackers = 0;
-        viveTrackerDeviceIndex.Clear();
-
-        var error = ETrackedPropertyError.TrackedProp_Success;
-        for (uint i = 0; i < 16; i++)
-        {
-            var result = new System.Text.StringBuilder((int)64);
-            OpenVR.System.GetStringTrackedDeviceProperty(i, ETrackedDeviceProperty.Prop_RenderModelName_String, result, 64, ref error);
-            if (result.ToString().ToLower().Contains("tracker"))
-            {
-                // Store the information
-                viveTrackerDeviceIndex.Add(i);
-
-                // Assign to the list of trackers - 0 = left leg, 1 = right leg, 2 = left arm, 3 = right arm
-                dummyAssignment[(int)amtViveTrackers++].SetDeviceIndex((int)i);
-
-                // enable sorting of trackers
-                delayFrame = true;
-                dummyTrackerHolder.SetActive(true);
-            }
-        }
-    }
-    */
-
     //======================================= Methods to initiate which walker methods we are using =======================================
 
     // Hard coded assign of trackers function for different input types
@@ -276,18 +168,16 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
 
     protected override IEnumerator DoAssignment()
     {
-        float magicWaitNum = .2f;
+        float waitValue = .2f;
 
         // stage 1
         //------------------------------
         // To use as a delay to get better value for vive tracker transforms
-        yield return new WaitForSeconds(magicWaitNum);
+        yield return new WaitForSeconds(waitValue);
 
-        // stage 2               *This step will need to be changed || Should set a fix amount of trackers the movenment has to take in, or should we let it vary???
+        // stage 2
         //------------------------------
         // Get all tracker objects and assigns to a random dummy/container first, for reading later
-
-
 
         //Need to mod so it will detect trackers based on number needed.
         while (amtViveTrackers < movementManager.numberOfRequiredTrackers)
@@ -296,15 +186,14 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
             {
                 GetViveTrackers();
             }
-            else
-            {
-                //Debug.Log("No VR device detected. Waiting for detect to be attaced");
-            }
+            //else
+            //{
+            //    //Debug.Log("No VR device detected. Waiting for detect to be attaced");
+            //}
 
-            yield return new WaitForSeconds(magicWaitNum);
+            yield return new WaitForSeconds(waitValue);
         }
 
-        // Set step one to completed
         stepOneTrackersDetected = true;
 
         // stage 2.5
@@ -322,9 +211,9 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
         }
 
         // stage 3
-        // Wait for player to stablize / stop moving                    *Or, we can prompt the operator to press a button
+        // Wait for player to stablize / stop moving
         //------------------------------
-        // Delay one frame for the assignment of the index to sink in
+        // Delay one frame for the assignment of the index
         yield return new WaitForEndOfFrame();
 
         bool farCheck = false;
@@ -348,7 +237,7 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
                 prevPos[i] = dummyAssignment[i].transform.position;
             }
 
-            if (farCheck || !CheckUserPresent() /* XRDevice.userPresence != UserPresenceState.Present*/)
+            if (farCheck || !CheckUserPresent())
             {
                 t = 0;
             }
@@ -367,7 +256,7 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
         //------------------------------
         switch (amtViveTrackers)
         {
-            case 2: // Arms tracker only
+            case 2: // Arm locomotion (Arms only)
                 if (movementManager.magnitudeInputType == e_InputType.e_InputTypeArm)
                 {
                     SortArmTrackers();
@@ -388,7 +277,7 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
                 }
 
                 break;
-            case 3: // Legs and chest trackers
+            case 3: // Leg locomotion (legs & chest)
                 SortChestAndLegsTrackers();
 
                 // Remove assign of left and right hand
@@ -401,7 +290,7 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
                 // Remove assign of chest
                 AssignTrackerIndex(4, 11);
                 break;
-            case 5: // Both arms, legs and chest trackers
+            case 5: // Full body locmotion (Arms, legs, and chest)
                 SortAllTrackers();
                 break;
         }

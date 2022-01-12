@@ -46,10 +46,6 @@ public class MovementManager : MonoBehaviour
     public GameObject LeftFoot;
     public GameObject RightFoot;
 
-    // slope detection manager
-    [HideInInspector]
-    public SlopeDetection slopeInput;
-
     // to store the inputs to check within the restTime to ensure
     // that all the inputs are taken into account
     Dictionary<e_InputType, float> movementInputDict =
@@ -70,7 +66,6 @@ public class MovementManager : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        slopeInput = GetComponent<SlopeDetection>();
         UpdateMovementType();
     }
 
@@ -102,7 +97,7 @@ public class MovementManager : MonoBehaviour
     /// </summary>
     void Move()
     {
-        Vector3 vec = (moveSpeed * moveDirection * (slopeInput.effortModiftier));
+        Vector3 vec = (moveSpeed * moveDirection);
         vec.y += rb.velocity.y;
         rb.velocity = vec;
     }

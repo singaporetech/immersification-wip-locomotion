@@ -36,10 +36,7 @@ public class HeadBobMovement : InputManager
     public float decelerationMultiplier;
     float SpeedTimer;
 
-
-
     // to check the peaks
-    // Same as accelerateionTime?????
     private float currentTime = 0.0f;
     private bool updateTimeBetweenPeaks = false;
 
@@ -104,7 +101,7 @@ public class HeadBobMovement : InputManager
             tempList.Clear();
         }
 
-        SpeedTimer = Mathf.Clamp(SpeedTimer, 0, timeTillMaxSpeed); //To clamp speed or to only add/minius based on max/min?
+        SpeedTimer = Mathf.Clamp(SpeedTimer, 0, timeTillMaxSpeed);
         SetMoveSpeed();
     }
 

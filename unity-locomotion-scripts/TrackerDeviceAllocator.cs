@@ -40,26 +40,6 @@ public class TrackerDeviceAllocator : MonoBehaviour
         StartAssignment();
     }
 
-    // ============== Detect functions ================
-
-    public virtual bool CheckUserPresent()
-    {
-        bool userPresent = false;
-
-        InputDevice headDevice = InputDevices.GetDeviceAtXRNode(XRNode.Head);
-
-        if (headDevice.isValid)
-        {
-            //bool presenceFeatureSupported = headDevice.TryGetFeatureValue(CommonUsages.userPresence, out userPresent);
-            bool presenceFeatureSupported = headDevice.TryGetFeatureValue(CommonUsages.userPresence, out userPresent);
-        }
-
-        Debug.Log("User present is " + userPresent + ".");
-        return userPresent;
-    }
-
-
-
     // ============== Setup and initialize functions ==============
     protected virtual void Initialize()
     {
@@ -73,6 +53,23 @@ public class TrackerDeviceAllocator : MonoBehaviour
         currCoroutine = null;
     }
 
+    // ============== Detect functions ================
+
+    public virtual bool CheckUserPresent()
+    {
+        bool userPresent = false;
+
+        InputDevice headDevice = InputDevices.GetDeviceAtXRNode(XRNode.Head);
+
+        if (headDevice.isValid)
+        {
+            bool presenceFeatureSupported = headDevice.TryGetFeatureValue(CommonUsages.userPresence, out userPresent);
+        }
+
+        //Debug.Log("User present is " + userPresent + ".");
+        return userPresent;
+    }
+
     // Search for all active VIVE trackers and assigns them to a dummy object
     protected virtual void GetViveTrackers()
     {
@@ -81,14 +78,10 @@ public class TrackerDeviceAllocator : MonoBehaviour
 
         var error = ETrackedPropertyError.TrackedProp_Success;
 
-        //var error2 = ETrackedPropertyError.TrackedProp_Success;
-
         for (uint i = 0; i < 16; i++)
         {
             var result = new System.Text.StringBuilder((int)64);
             OpenVR.System.GetStringTrackedDeviceProperty(i, ETrackedDeviceProperty.Prop_RenderModelName_String, result, 64, ref error);
-
-            //OpenVR.System.GetBoolTrackedDeviceProperty(i, ETrackedDeviceProperty.Prop_RegisteredDeviceType_String, ref error2);
 
             if (result.ToString().ToLower().Contains("tracker") && OpenVR.System.IsTrackedDeviceConnected(i) /*&& error == ETrackedPropertyError.TrackedProp_Success*/)
             {
@@ -99,7 +92,6 @@ public class TrackerDeviceAllocator : MonoBehaviour
                 dummyAssignment[(int)amtViveTrackers++].SetDeviceIndex((int)i);
             }
         }
-        //Debug.Log(viveTrackerDeviceIndex.Count);
     }
 
     protected virtual void StartAssignment()

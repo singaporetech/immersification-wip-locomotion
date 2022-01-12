@@ -26,11 +26,6 @@ public class LegLiftMovement : InputManager
 
     public float lerp_t = 0.01f;
 
-    //for changing direction when holding pram
-    private bool pramDirToggle = false;
-    private GameObject PlayerHandle;
-    private GameObject VirtualHandle;
-
     /// <summary>
     /// Initialize function from Unity
     /// </summary>
@@ -60,15 +55,7 @@ public class LegLiftMovement : InputManager
         //Added in check to only set a valid move speed if HMD is on
         moveSpeed = Mathf.Lerp(moveSpeed, objectiveSpeed, lerp_t * (checkStaticLegs() ? 10f : 1f) * Time.deltaTime);
 
-        //if pram controller, follow pram's forward vector when holding it
-        if(pramDirToggle && VirtualHandle.GetComponent<PramHandle>().GetGrabCount() > 0)
-        {
-            moveDirection = PlayerHandle.transform.forward;
-        }
-        else
-        {
-            moveDirection = new Vector3(chest.transform.forward.x, 0, chest.transform.forward.z);
-        }
+        moveDirection = new Vector3(chest.transform.forward.x, 0, chest.transform.forward.z);
     }
 
     void FixedUpdate()
@@ -102,17 +89,5 @@ public class LegLiftMovement : InputManager
     bool checkStaticLegs()
     {
         return (leftLegTracker.GetDead()) && (rightLegTracker.GetDead());
-    }
-
-    /// <summary>
-    /// Changes leg lift controller to a pram controller. Initializes pram variables.
-    /// </summary>
-    /// <param name="Handle">Assigned to variable: PlayerHandle</param>
-    /// <param name="VHandle">Assigned to variable: VirtualHandle</param>
-    public void TogglePramDir(GameObject Handle, GameObject VHandle)
-    {
-        pramDirToggle = true;
-        PlayerHandle = Handle;
-        VirtualHandle = VHandle;
     }
 }
