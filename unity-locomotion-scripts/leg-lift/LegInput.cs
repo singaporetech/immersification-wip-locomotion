@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿//
+// Copyright 2019-2022 Singapore Institute of Technology
+//
+
+using UnityEngine;
 
 // <summary>
 /// Get the swing input from the leg.

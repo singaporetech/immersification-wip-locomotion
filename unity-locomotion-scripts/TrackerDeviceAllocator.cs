@@ -1,4 +1,8 @@
-﻿using System.Collections;
+﻿//
+// Copyright 2019-2022 Singapore Institute of Technology
+//
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR;
