@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/00_MainMenu.unity
+    guid: 72773f40e1eba6843b063a48f63ffb0b
+  - enabled: 1
+    path: Assets/Scenes/01_MockEnvironment.unity
+    guid: 1dde9fc3df72ad446a3bdf7ba5afe293
+  - enabled: 1
+    path: Assets/Scenes/02_BedokEnvironment.unity
+    guid: 5f49692d920e6f04b8a07660385d16b4
+  - enabled: 1
+    path: Assets/Scenes/03_BedokStn.unity
+    guid: 9e4da24980de8a448bcab54c13052623
+  - enabled: 1
+    path: Assets/Scenes/04_MovementTestGym.unity
+    guid: d7fbbb36c816f674fbd41e8320833edf
+  m_configObjects:
+    Unity.XR.OpenVR.Settings: {fileID: 11400000, guid: 865f696754416f64f95b88b187c66993,
+      type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 55557474930857047b98cdcd2b4b736e,
+      type: 2}
