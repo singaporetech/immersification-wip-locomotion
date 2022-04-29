@@ -2,8 +2,6 @@
 // Copyright 2019-2022 Singapore Institute of Technology
 //
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -18,36 +16,54 @@ public enum e_Hand { e_HandLeft, e_HandRight };
 public class ArmSwingMovement : InputManager
 {
     [Header("Components")]
-    public HandInput LeftHand;
-    public HandInput RightHand;
+    public HandInput leftHandInput;
+    public HandInput RightHandInput;
 
     [Header("Speed settings")]
     // min speed
     public float minSpeed = 1;
     // max speed
     public float maxSpeed = 4;
-    //public float speedMultiplier = 1;
     /// <summary>
-    /// Rate at which the player will slowdown when controllers hits a deadzone
+    /// Rate at which the player will slowdown when hitting a deadzone
     /// </summary>
     public float timeTillMaxSpeed = .3f;
     public float accelerationMultiplier = 1;
     public float decelerationMultiplier = 1;
+    /// <summary>
+    /// The max possible speed based on the given inputs.
+    /// </summary>
+    float targetSpeed;
+    /// <summary>
+    /// The intended direction based on the given inputs.
+    /// </summary>
+    Vector3 targetDirection;
 
     [Header("Swing settings")]
-    // input time between swings --> both arm swigns must be done within this set time to  count as vaild.
+    /// <summary>
+    /// Input time between swings --> both arm swigns must be done within this set time to  count as vaild.
+    /// </summary>
     public float timeToCompleteSet = 0.05f;
-    // min amount to consider it as swing
+    /// <summary>
+    /// min amount of input recieved by the HandInput to consider it as swing
+    /// </summary>
     public int minSwingsForCompleteSet = 5;
-    public int PassiveWalkableFrameCount = 5;
     /// <summary>
     /// Represents the mininum valuve require for any movement to count as a valid swing.
     /// </summary>
     public float minSwingDistance = 0.3f;
-    // max swing value to calculate speed
+    /// <summary>
+    /// max swing value to calculate speed
+    /// </summary>
     public float maxSwingDistance = 1.6f;
-    // error to clear swing set
+    /// <summary>
+    /// error to clear swing set
+    /// </summary>
     public int maxErrors = 3;
+
+    //Countdown timer for timeToCompleteSwingSet
+    float SwingCompleteSetTimer = 0f;
+    float SpeedTimer = 0;
 
     [Header("Deadzone settings")]
     /// <summary>
@@ -55,36 +71,46 @@ public class ArmSwingMovement : InputManager
     /// </summary>
     public float movementDeadZone = .01f;
 
-    Rigidbody rb;
+    /// <summary>
+    /// How many frames the movement will continue to move without input from the left and right HandInput.cs.
+    /// </summary>
+    public int PassiveWalkableFrameCount = 5;
+    float passiveWalkCount = 0;
+
+    /// <summary>
+    /// Used to indicate if data was been recieved from the the respective hand HandInput.cs
+    /// </summary>
     HandInputData leftHand, rightHand;
 
-    float targetSpeed;
-    Vector3 targetDirection;
+    /// <summary>
+    /// Records if the current frame has detected a valid input from either HandInput.cs.
+    /// </summary>
+    bool frameHasActiveInput;
 
-    bool frameIsActiveInput;
+    /// <summary>
+    /// Previously recorded targetSpeed
+    /// </summary>
     float lastActiveSpeed;
-    Vector3 lastActiveDir;
 
-    //Countdown timer for timeToCompleteSwingSet
-    float SwingCompleteSetTimer = 0f;
-    float SpeedTimer = 0;
-    float passiveWalkCount = 0;
+    /// <summary>
+    /// Previously recorded targetDirection
+    /// </summary>
+    Vector3 lastActiveDir;
 
     /// <summary>
     /// Set up
     /// </summary>
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
         type = e_InputType.e_InputTypeArm;
-
-        InitializeInputData();
+        InitInputData();
     }
 
-    public void InitializeInputData()
+    /// <summary>
+    /// Resets the input data for recording of swings.
+    /// </summary>
+    public void InitInputData()
     {
-        //accelerationTimer = 0;
-
         SwingCompleteSetTimer = 0;
         leftHand.direction = Vector3.zero;
         leftHand.isForwardSwing = false;
@@ -105,11 +131,12 @@ public class ArmSwingMovement : InputManager
         //If player does not swing within the time allocated, the timer will reset the entire motion
         //and all valid actions are erased.
         if (SwingCompleteSetTimer >= timeToCompleteSet)
-            InitializeInputData();
+            InitInputData();
+
         SwingCompleteSetTimer += Time.deltaTime;
 
         //For when the player has sent 2 sets of active inputs
-        if (frameIsActiveInput)
+        if (frameHasActiveInput)
         {
             //passiveWalkCount += 1;
             //if (UseTimedAcceleration)
@@ -117,18 +144,17 @@ public class ArmSwingMovement : InputManager
             UpdateMovementActive();
 
             //Reset everything
-            InitializeInputData();
-            frameIsActiveInput = false;
-            //Debug.Log("I am active. ");
+            InitInputData();
+            frameHasActiveInput = false;
         }
         // For when no set of valid inputs are present
-        else if (!frameIsActiveInput)
+        else if (!frameHasActiveInput)
         {
             // At least one hand is swinging but input(s) are not valid to count as a full "active" swing
             // passiveWalkLerpTimer < passiveWalkRate will allow the user to "walk passively" based
             // on the frame required for valid inputs
 
-            if (!CheckEitherIsDead() && passiveWalkCount < PassiveWalkableFrameCount)
+            if (!InactiveHandsCheck() && passiveWalkCount < PassiveWalkableFrameCount)
             {
                 passiveWalkCount += 1;
                 SpeedTimer += Time.deltaTime * accelerationMultiplier;
@@ -155,8 +181,6 @@ public class ArmSwingMovement : InputManager
         SendMagnitude();
     }
 
-    // =============== Update movement speed functions ===============
-
     /// <summary>
     /// if one of the swing is forward and one is backwards
     /// calculate speed
@@ -180,27 +204,37 @@ public class ArmSwingMovement : InputManager
         targetDirection = lastActiveDir;
     }
 
+    /// <summary>
+    /// Updates targetSpeed to the last achived speed via lastActiveSpeed.
+    /// </summary>
     private void UpdateStoppingMovement()
     {
         targetSpeed = lastActiveSpeed;
     }
 
-    public void SetUpdateMovementType()
+    /// <summary>
+    /// Updates frameHasActive.
+    /// </summary>
+    public void DetectActiveInput()
     {
-        frameIsActiveInput = (leftHand.inputTaken && rightHand.inputTaken) && (leftHand.isForwardSwing ^ rightHand.isForwardSwing) ? true : false;
+        frameHasActiveInput = (leftHand.inputTaken && rightHand.inputTaken) && (leftHand.isForwardSwing ^ rightHand.isForwardSwing) ? true : false;
     }
 
+    /// <summary>
+    /// Sets moveSpeed via targetSpeed, and SpeedTimer/timeTillMaxSpeed.
+    /// </summary>
     public void SetMoveSpeed()
     {
         moveSpeed = targetSpeed * (SpeedTimer / timeTillMaxSpeed);
     }
 
+    /// <summary>
+    /// Sets moveDirection via targetDirection.
+    /// </summary>
     public void SetMoveDirection()
     {
         moveDirection = targetDirection;
     }
-
-    // =============== Calculation functions ===============
 
     /// <summary>
     /// Converting magnitude of vector into a speed vector
@@ -224,17 +258,17 @@ public class ArmSwingMovement : InputManager
         return a;
     }
 
+    /// <summary>
+    /// Calculates assumed direction based on direction input from leftHand and rightHand.
+    /// </summary>
+    /// <returns>Movement direction</returns>
     private Vector3 calculateSwingDirection()
     {
         Vector3 moveDir = leftHand.isForwardSwing ? (leftHand.direction.normalized - rightHand.direction.normalized) :
                                                     (rightHand.direction.normalized - leftHand.direction.normalized);
-
-        // removing the y vector
         moveDir.y = 0;
         return moveDir;
     }
-
-    // ================= Messenger and getter functions ==================    
 
     /// <summary>
     /// Take in the swing data from the left controller
@@ -250,7 +284,7 @@ public class ArmSwingMovement : InputManager
         leftHand.inputTaken = true;
 
         //Try and set the current update movement type to active (input driven) update, or static(non-input driven) update
-        SetUpdateMovementType();
+        DetectActiveInput();
     }
 
     /// <summary>
@@ -266,14 +300,17 @@ public class ArmSwingMovement : InputManager
         rightHand.isForwardSwing = Forward;
         rightHand.inputTaken = true;
 
-        //Try and set the current update movement type to active (input driven) update, or static(non-input driven) update
-        SetUpdateMovementType();
+        // Try and set the current update movement type to active(input driven) update, or static (non-input driven) update
+        DetectActiveInput();
     }
 
-    //see if player not swinging arms
-    bool CheckEitherIsDead()
+   /// <summary>
+   /// Checks if either hand is inactive.
+   /// </summary>
+   /// <returns>true if both hands are inactive. False if at least one is active. </returns>
+    bool InactiveHandsCheck()
     {
-        if (LeftHand.GetIsDead() && RightHand.GetIsDead())
+        if (leftHandInput.GetIsDead() && RightHandInput.GetIsDead())
         {
             return true;
         }
@@ -284,6 +321,9 @@ public class ArmSwingMovement : InputManager
     }
 }
 
+/// <summary>
+/// Houses the recieved data from a HandInput.cs
+/// </summary>
 public struct HandInputData
 {
     public Vector3 direction;

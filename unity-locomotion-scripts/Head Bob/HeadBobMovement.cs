@@ -2,11 +2,8 @@
 // Copyright 2019-2022 Singapore Institute of Technology
 //
 
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using Valve.VR;
 
 /// <summary>
 /// Head Bob Input Manager to process input from the HMD
@@ -15,11 +12,8 @@ using Valve.VR;
 /// </summary>
 public class HeadBobMovement : InputManager
 {
-    [Header("Settings")]
-    public GameObject camera;
-
-    float iniitalYPos = 1.6f;
-
+    [Header("Components")]
+    public GameObject vrCamera;
 
     // values to determine central axis
     private readonly float upRatio = 0.06f;
@@ -27,22 +21,24 @@ public class HeadBobMovement : InputManager
     // spacing between the middle axis to determine min and max range.
     public float spacingOffset = 2f;
 
-    private Vector3 camPos;
-    private Vector3 camRot;
-    //Data to determine the range
+    /// <summary>
+    /// The initial starting Y position of the vrCamera.
+    /// </summary>
+    private float camIniitalYPos = 0;
 
+    /// <summary>
+    /// The vrCamera rotation in euler angles.
+    /// </summary>
+    private Vector3 camRot;
+
+    // Speed and speed multiplier variables.
     public float multiplier = 1;
+    float targetSpeed;
+    public float accelerationMultiplier = 1;
+    public float decelerationMultiplier = 1;
+    float SpeedTimer;
     public float maxSpeed = 2.5f;
     public float timeTillMaxSpeed = .3f;
-    float targetSpeed;
-
-    public float accelerationMultiplier;
-    public float decelerationMultiplier;
-    float SpeedTimer;
-
-    // to check the peaks
-    private float currentTime = 0.0f;
-    private bool updateTimeBetweenPeaks = false;
 
 
     [Header("Data to calculate step")]
@@ -50,22 +46,25 @@ public class HeadBobMovement : InputManager
     private readonly int filterSize = 4;
     // size of queue to check if step is made
     private readonly int queueSize = 5;
-    // min time to make a step
-    private readonly float stepMinTime = 0.2f;
-    // max time to make a step
-    private readonly float stepMaxTime = 2.0f;
 
     // epsilon for checks
-    // min peak to ensure minimum step
+    /// <summary>
+    /// Min peak to ensure minimum step
+    /// </summary>
     public float minPeak = 0.05f;
-    // max peak to ensure maximum step
+    /// <summary>
+    /// Max peak to ensure maximum step
+    /// </summary>
     public float maxPeak = .4f;
 
+    /// <summary>
+    /// Temporary list of frame input data.
+    /// </summary>
+    List<float> tempInputList = new List<float>();
 
-
-
-    // data sets
-    List<float> tempList = new List<float>();
+    /// <summary>
+    /// List of filtered input data.
+    /// </summary>
     Queue<float> filteredData = new Queue<float>();
 
     /// <summary>
@@ -77,16 +76,17 @@ public class HeadBobMovement : InputManager
     }
 
     /// <summary>
-    /// Init function to run when switching this one from the movement manager
+    /// Init function to run when enabling this movement from the movement manager
     /// </summary>
     public void Init()
     {
-        iniitalYPos = camera.transform.localPosition.y;
+        camIniitalYPos = vrCamera.transform.localPosition.y;
         SetMoveDirection();
     }
 
     /// <summary>
     /// Update function from unity
+    /// Handles detection and recording of inputs.
     /// </summary>
     void Update()
     {
@@ -94,24 +94,29 @@ public class HeadBobMovement : InputManager
 
         //Number of frames is enough to make a valid set to update movment
         GetHeadFrameInput();
-        if (tempList.Count >= filterSize)
+        if (tempInputList.Count >= filterSize)
         {
             float inputsStrength = 0;
-            foreach (float obj in tempList)
+            foreach (float obj in tempInputList)
                 inputsStrength += obj;
+
             // run step recognition
             AddSetToList(inputsStrength);
 
-            tempList.Clear();
+            tempInputList.Clear();
         }
 
         SpeedTimer = Mathf.Clamp(SpeedTimer, 0, timeTillMaxSpeed);
         SetMoveSpeed();
     }
 
+    /// <summary>
+    /// FixedUpdate function from unity
+    /// Handles sending the speed and direction values to the movement manager.
+    /// </summary>
     private void FixedUpdate()
     {
-        // send direction and speed to the movement manage/r
+        //Send direction and speed to the movement manager
         SendDirection();
         SendMagnitude();
 
@@ -124,11 +129,12 @@ public class HeadBobMovement : InputManager
     Vector2 ReturnBobbingRange()
     {
         Vector2 range;
+
         //for slight adjustments if the player is looking up or down
         float adValue = CalculateDegreeAdjustmentValue();
 
-        range.x = iniitalYPos + adValue + spacingOffset;
-        range.y = iniitalYPos + adValue - spacingOffset;
+        range.x = camIniitalYPos + adValue + spacingOffset;
+        range.y = camIniitalYPos + adValue - spacingOffset;
 
         return range;
     }
@@ -152,8 +158,6 @@ public class HeadBobMovement : InputManager
 
         return heightithink;
     }
-
-    // ================ Update methods ================
     
     /// <summary>
     /// Run Recognition Algorithm to find velocity of step
@@ -164,7 +168,7 @@ public class HeadBobMovement : InputManager
     public void GetHeadFrameInput()
     {
         Vector2 range = ReturnBobbingRange();
-        float camY = camera.transform.localPosition.y;
+        float camY = vrCamera.transform.localPosition.y;
 
         // check if value is between the range to ensure
         // that the movement isnt too big or too small
@@ -172,7 +176,7 @@ public class HeadBobMovement : InputManager
         if (camY <= range.x && camY >= range.y)
         {
             // moving average filter
-            tempList.Add(camY);
+            tempInputList.Add(camY);
         }
     }
 
@@ -205,7 +209,6 @@ public class HeadBobMovement : InputManager
             if ((disStep >= minPeak && disStep <= maxPeak))
             {
                 SpeedTimer +=Time.deltaTime * accelerationMultiplier;
-
                 SetTargetSpeed(disStep * multiplier);
             }
 
@@ -236,18 +239,21 @@ public class HeadBobMovement : InputManager
     /// </summary>
     void SetMoveDirection()
     {
-        camRot = camera.transform.localRotation.eulerAngles;
+        camRot = vrCamera.transform.localRotation.eulerAngles;
         if (camRot.x > 180)
         {
             camRot.x -= 360;
         }
         camRot.x = -camRot.x;
 
-        //moveDirection = camera.transform.forward;
-        moveDirection = Vector3.Normalize(new Vector3(camera.transform.forward.x, 0, camera.transform.forward.z));
+        moveDirection = Vector3.Normalize(new Vector3(vrCamera.transform.forward.x, 0, vrCamera.transform.forward.z));
     }
-    // ================ Calculations ================
 
+    /// <summary>
+    /// Returns the largest float in an array
+    /// </summary>
+    /// <param name="arr">Array containing floats</param>
+    /// <returns></returns>
     float ReturnLargest(float[] arr)
     {
         float i = arr[0];
@@ -263,6 +269,11 @@ public class HeadBobMovement : InputManager
         return i;
     }
 
+    /// <summary>
+    /// Returns the smallest float in an array
+    /// </summary>
+    /// <param name="arr">Array containing floats</param>
+    /// <returns></returns>
     float ReturnSmallest(float[] arr)
     {
         float i = arr[0];
@@ -278,6 +289,10 @@ public class HeadBobMovement : InputManager
         return i;
     }
 
+    /// <summary>
+    /// Sets the targetSpeed viable according to the s parameter
+    /// </summary>
+    /// <param name="s">The speed to be set.</param>
     void SetTargetSpeed(float s)
     {
         targetSpeed = Mathf.Clamp(s, 0, maxSpeed);

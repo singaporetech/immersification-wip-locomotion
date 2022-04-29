@@ -8,10 +8,16 @@ using UnityEngine;
 using UnityEngine.XR;
 using Valve.VR;
 
+/// <summary>
+/// Base class for tracker detection and allocation
+/// Inheritance used by WalkerTrackerDeviceAllocator.cs
+/// </summary>
 public class TrackerDeviceAllocator : MonoBehaviour
 {
+    public MovementManager movementManager;
+
     [Header("Actual VR track objects")]
-    // To store the trackedobject holder of the object
+    // To store the tracked object holder of the object
     /// <summary>
     /// 0 = left leg * 1 = right leg * 2 = left hand * 3 = right hand * 4 = chest
     /// </summary>
@@ -25,59 +31,104 @@ public class TrackerDeviceAllocator : MonoBehaviour
      */
 
     [Header("Dummy objects")]
-    // Dummy Holder
+    /// <summary>
+    /// The parent containing all the dummy trackers
+    /// </summary>
     public GameObject dummyTrackerHolder;
+    /// <summary>
+    /// List of dummy trackers.
+    /// </summary>
     public List<SteamVR_TrackedObject> dummyAssignment = new List<SteamVR_TrackedObject>();
 
-    //[HideInInspector]
-    public bool stepOneTrackersDetected = false, stepTwoTrackerStablized = false, stepThreeTrackersAllocated = false;
-    // to keep track on the trackers' index
-    protected List<uint> viveTrackerDeviceIndex = new List<uint>();
-    // Stores the amount of trackers detected in the scene
+    /// <summary>
+    /// List containing the tracker device Index from the dummy trackers' SteamVR_TrackedObject components.
+    /// </summary>
+    protected List<uint> trackerDeviceIndex = new List<uint>();
+    
+    /// <summary>
+    /// The amount of active trackers currently powered on and detected by Steam VR.
+    /// </summary>
     protected uint amtViveTrackers = 0;
 
+    /// <summary>
+    /// The minimum of trackers needed for the locomotion controls to work.
+    /// </summary>
+    protected uint neededTrackers = 0;
+
+    /// <summary>
+    /// The coroutine currently running for assigning of trackers.
+    /// </summary>
     protected Coroutine currCoroutine;
 
+    /// <summary>
+    /// Initialize function from Unity
+    /// </summary>
     protected virtual void Start()
     {
-        Initialize();
+        Init();
         StartAssignment();
     }
 
-    // ============== Setup and initialize functions ==============
-    protected virtual void Initialize()
+    /// <summary>
+    /// Init function to run on start to resets all values in the script.
+    /// </summary>
+    protected virtual void Init()
     {
-        stepOneTrackersDetected = false;
-        stepTwoTrackerStablized = false;
-        stepThreeTrackersAllocated = false;
-
         amtViveTrackers = 0;
-        viveTrackerDeviceIndex.Clear();
+        SetNumberOfTrackersNeeded();
+
+        trackerDeviceIndex.Clear();
 
         currCoroutine = null;
     }
 
-    // ============== Detect functions ================
+    /// <summary>
+    /// Sets number of trackers required based on movementManager.magnitudeInputType input type.
+    /// </summary>
+    protected virtual void SetNumberOfTrackersNeeded()
+    {
+        switch (movementManager.magnitudeInputType)
+        {
+            case e_InputType.e_InputTypeHead:
+                neededTrackers = 0;
+                break;
+            case e_InputType.e_InputTypeArm:
+                neededTrackers = 2;
+                break;
+            case e_InputType.e_InputTypeLeg:
+                neededTrackers = 3;
+                break;
+            case e_InputType.e_InputTypeFullBody:
+                neededTrackers = 5;
+                break;
+            default:
+                Debug.LogError("movementManager.magnitudeInputType is set to an invalid value.");
+                break;
+        }
+    }
 
-    public virtual bool CheckUserPresent()
+    /// <summary>
+    /// Checks if the VR HMD is wore.
+    /// </summary>
+    /// <returns>Returns true if presence is detected. False if not.</returns>
+    public virtual bool CheckUserPresence()
     {
         bool userPresent = false;
 
         InputDevice headDevice = InputDevices.GetDeviceAtXRNode(XRNode.Head);
 
         if (headDevice.isValid)
-        {
-            bool presenceFeatureSupported = headDevice.TryGetFeatureValue(CommonUsages.userPresence, out userPresent);
-        }
+            headDevice.TryGetFeatureValue(CommonUsages.userPresence, out userPresent);
 
-        //Debug.Log("User present is " + userPresent + ".");
         return userPresent;
     }
 
-    // Search for all active VIVE trackers and assigns them to a dummy object
+    /// <summary>
+    /// Search for all active trackers and assigns them to a dummy tracker object for storage.
+    /// </summary>
     protected virtual void GetViveTrackers()
     {
-        viveTrackerDeviceIndex.Clear();
+        trackerDeviceIndex.Clear();
         amtViveTrackers = 0;
 
         var error = ETrackedPropertyError.TrackedProp_Success;
@@ -90,7 +141,7 @@ public class TrackerDeviceAllocator : MonoBehaviour
             if (result.ToString().ToLower().Contains("tracker") && OpenVR.System.IsTrackedDeviceConnected(i) /*&& error == ETrackedPropertyError.TrackedProp_Success*/)
             {
                 // Store the information
-                viveTrackerDeviceIndex.Add(i);
+                trackerDeviceIndex.Add(i);
 
                 // Assign the VIVE tracker to a dummy tracking object
                 dummyAssignment[(int)amtViveTrackers++].SetDeviceIndex((int)i);
@@ -98,12 +149,13 @@ public class TrackerDeviceAllocator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Begins the coroutine that starts assigning the dummy tracker objects to the actual tracked objects.
+    /// </summary>
     protected virtual void StartAssignment()
     {
         currCoroutine = StartCoroutine(DoAssignment());
     }
-
-    // ============== Assign Vive tracker to tracked object functions =============
 
     /// <summary>  Assigning tracker index with index</summary>
     /// <param name="trackerIndex">The first index variable</param>
@@ -120,7 +172,7 @@ public class TrackerDeviceAllocator : MonoBehaviour
     protected virtual void AssignTrackerIndexDynamic(int trackerIndex, int dynamicIndex)
     {
         // Assigning the new index
-        dummyAssignment[trackerIndex].SetDeviceIndex((int)viveTrackerDeviceIndex[dynamicIndex]);
+        dummyAssignment[trackerIndex].SetDeviceIndex((int)trackerDeviceIndex[dynamicIndex]);
     }
 
     /// <summary>  A swap function for swapping the index value and assigning</summary>
@@ -129,17 +181,19 @@ public class TrackerDeviceAllocator : MonoBehaviour
     protected virtual void SwapTrackerIndex(int first, int second)
     {
         // Swap Algorithm
-        uint swap = viveTrackerDeviceIndex[first];
-        viveTrackerDeviceIndex[first] = viveTrackerDeviceIndex[second];
-        viveTrackerDeviceIndex[second] = swap;
+        uint swap = trackerDeviceIndex[first];
+        trackerDeviceIndex[first] = trackerDeviceIndex[second];
+        trackerDeviceIndex[second] = swap;
 
         // Assigning the new index
-        dummyAssignment[first].SetDeviceIndex((int)viveTrackerDeviceIndex[first]);
-        dummyAssignment[second].SetDeviceIndex((int)viveTrackerDeviceIndex[second]);
+        dummyAssignment[first].SetDeviceIndex((int)trackerDeviceIndex[first]);
+        dummyAssignment[second].SetDeviceIndex((int)trackerDeviceIndex[second]);
     }
 
-    // Set the real object for tracking and deactivate the dummy tracker
-    // Update the tracker device
+    /// <summary>
+    /// Set the real object for tracking and deactivate the dummy tracker
+    /// Update the tracker device
+    /// </summary>
     protected virtual void AssignDummyToRealTrackObject()
     {
         for (int i = 0; i < trackObjectAssignment.Count; i++)
@@ -178,9 +232,12 @@ public class TrackerDeviceAllocator : MonoBehaviour
         return Vector3.Distance(vecOne, vecTwo) >= distance;
     }
 
+    /// <summary>
+    /// Base method to be overridden for tracker assignment and setup.
+    /// </summary>
     protected virtual IEnumerator DoAssignment()
     {
-        viveTrackerDeviceIndex.Clear();
+        trackerDeviceIndex.Clear();
         amtViveTrackers = 0;
         currCoroutine = null;
         enabled = false;

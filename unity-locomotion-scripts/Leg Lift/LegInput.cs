@@ -7,30 +7,45 @@ using UnityEngine;
 // <summary>
 /// Get the swing input from the leg.
 /// This will prompt leglift movement
-/// PAPER : LT1 LLCM WIP 
+/// Used in LegLiftMovement.cs.
 /// </summary>
 public class LegInput : MonoBehaviour
 {
-    // previous position of tracker
+    [Header("Input Settings")]
+    public bool leftLeg = false;
+
+    /// <summary>
+    /// Indicates if inputs are detected or not.
+    /// </summary>
+    private bool isDead = false;
+
+    /// <summary>
+    /// Previous position of tracker
+    /// </summary>
     private float lastPosUp;
 
+    /// <summary>
+    /// The final calculated speed input.
+    /// </summary>
     [HideInInspector]
     public float finalLiftSpeed;
 
-    [Header("Values for scaling speed")]
-    // value to offset
+    [Header("Speed settings")]
+    /// <summary>
+    /// Value to offset for speed smoothing.
+    /// </summary>
     public float offsetValue = 0.01f;
+
     // min and max speed filter noise
     public float minAbsSpeed = 0.0001f;
     public float maxAbsSpeed = 0.7f;
 
-    public bool leftLeg = false;
-
     public float deadZone = 0.1f;
 
-    private bool isDead = false;
-
-    //to eliminate step too high excessive movement
+    /// <summary>
+    /// Maximum distance from local Y coordinate 0.
+    /// to eliminate step too high excessive movement
+    /// </summary>
     public float maxHeight = 0.4f;
 
     /// <summary>
@@ -49,7 +64,7 @@ public class LegInput : MonoBehaviour
         finalLiftSpeed = 0;
         float velUp = AbsGetUpSpeed();
 
-        float smoothedVel = velUp;
+        float smoothedVel;
 
         if(leftLeg)
             smoothedVel = ButterworthL.FilterLoop(velUp);

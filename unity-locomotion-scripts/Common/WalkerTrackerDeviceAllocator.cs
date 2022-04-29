@@ -5,26 +5,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Valve.VR;
-using UnityEngine.XR;
 
 /// <summary>
-/// To assign the dynamic allocated tracker number to each limb
+/// To assign allocated trackers to each limb and the torso.
 /// </summary>
 public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
 {
-    [Header("Hand objects")]
-    // To store the left and right hand script to switch from controller input to tracker input
-    public HandInput leftHandInput;
-    public HandInput rightHandInput;
-
-    public MovementManager movementManager;
-
-    //======================================= Methods to initiate which walker methods we are using =======================================
-
-    // Hard coded assign of trackers function for different input types
-    //------------------------------
-    /// <summary>  Sort the 2 trackers to the left and right arms</summary>
+    /// <summary>
+    /// Sort the 2 trackers to the left and right arms</summary>
+    /// </summary>
     void SortArmTrackers()
     {
         // Determine left and right trackers
@@ -37,21 +26,9 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
         AssignTrackerIndexDynamic(3, 1);
     }
 
-    /// <summary>  Sort the 2 trackers to the left and right arms</summary>
-    void SortLegTrackers()
-    {
-        // Determine left and right trackers
-        AssignPairTrackers(0, dummyAssignment[0].GetComponent<Transform>().position,
-                            dummyAssignment[1].GetComponent<Transform>().position);
-
-        // Assign left leg
-        AssignTrackerIndexDynamic(0, 0);
-        // Assign right leg
-        AssignTrackerIndexDynamic(1, 1);
-    }
-
-    // uses SwapTrackerIndex
-    /// <summary>  Sort the 4 trackers to the left and right for legs and arms</summary>
+    /// <summary>
+    /// Sort the 3 trackers to the left and right for legs and chest
+    /// </summary>
     void SortChestAndLegsTrackers()
     {
         List<Vector3> limbPos = new List<Vector3>();
@@ -82,8 +59,9 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
         AssignTrackerIndexDynamic(4, 2);
     }
 
-    //uses SwapTrackerIndex
-    /// <summary>  Sort the 4 trackers to the left and right for legs and arms</summary>
+    /// <summary>
+    /// Sort the 4 trackers to the left and right for legs and arms
+    /// </summary>
     void SortArmLegTrackers()
     {
         // Store the position of the 4 trackers
@@ -128,7 +106,10 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
         AssignPairTrackers(2, limbPos[2], limbPos[3]);
     }
 
-    //uses SwapTrackerIndex
+    /// <summary>
+    /// Sort the 4 trackers to the left and right for legs and arms
+    /// and chest
+    /// </summary>
     void SortAllTrackers()
     {
         // Store the position of the 4 trackers
@@ -170,57 +151,29 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
         SortArmLegTrackers();
     }
 
+    /// <summary>
+    /// Assignment coroutine that assigns the dummy tracker objects to the actual tracked objects.
+    /// </summary>
     protected override IEnumerator DoAssignment()
     {
-        float waitValue = .2f;
-
-        // stage 1
-        //------------------------------
-        // To use as a delay to get better value for vive tracker transforms
+        // Delay assigning for .2 seconds.
+        // To enable trackers to be properly detected before assigning.
+        float waitValue = .2f; 
         yield return new WaitForSeconds(waitValue);
 
-        // stage 2
-        //------------------------------
-        // Get all tracker objects and assigns to a random dummy/container first, for reading later
-
-        //Need to mod so it will detect trackers based on number needed.
-        while (amtViveTrackers < movementManager.numberOfRequiredTrackers)
+        // Get all tracker objects and assigns to a random dummy/container first
+        while (amtViveTrackers < neededTrackers)
         {
-            if (CheckUserPresent() /*XRDevice.isPresent*/)
-            {
+            // Gets trackers if user is supposedly ready and wearing all trackers.
+            if (CheckUserPresence())
                 GetViveTrackers();
-            }
-            //else
-            //{
-            //    //Debug.Log("No VR device detected. Waiting for detect to be attaced");
-            //}
 
             yield return new WaitForSeconds(waitValue);
         }
 
-        stepOneTrackersDetected = true;
-
-        // stage 2.5
-        // For Walker input only
-        //------------------------------
-        // If trackers == 4 indicate trackers are used instead of controller
-        if (viveTrackerDeviceIndex.Count != 0 && viveTrackerDeviceIndex.Count != 3)
-        {
-            // Switch from controller input into tracker input for both arms
-            leftHandInput.tracker = true;
-            leftHandInput.SetUpControl();
-
-            rightHandInput.tracker = true;
-            rightHandInput.SetUpControl();
-        }
-
-        // stage 3
-        // Wait for player to stablize / stop moving
-        //------------------------------
-        // Delay one frame for the assignment of the index
         yield return new WaitForEndOfFrame();
 
-        bool farCheck = false;
+        bool farCheck;
         float stablizeTime = .5f;
         float t = 0;
         float maxDis = .3f;
@@ -231,6 +184,7 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
             prevPos[i] = dummyAssignment[i].transform.position;
         }
 
+        // Wait for user to stop moving before assigning trackers
         while (t < stablizeTime)
         {
             farCheck = false;
@@ -241,7 +195,7 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
                 prevPos[i] = dummyAssignment[i].transform.position;
             }
 
-            if (farCheck || !CheckUserPresent())
+            if (farCheck || !CheckUserPresence())
             {
                 t = 0;
             }
@@ -252,35 +206,21 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
 
             yield return new WaitForEndOfFrame();
         }
-        stepTwoTrackerStablized = true;
 
-        // Stage 4
-        // Assign dummy tracker to real tracker object via offset from each other and location
-        // and according to the amount of trackers present.
-        //------------------------------
+        // Assign dummy tracker to real tracker object
+        // and according to the amount of trackers present
         switch (amtViveTrackers)
         {
             case 2: // Arm locomotion (Arms only)
-                if (movementManager.magnitudeInputType == e_InputType.e_InputTypeArm)
-                {
                     SortArmTrackers();
 
                     // Remove assign of legs and chest
                     AssignTrackerIndex(0, 11);
                     AssignTrackerIndex(1, 11);
                     AssignTrackerIndex(4, 11);
-                }
-                else // Default to legs only
-                {
-                    SortLegTrackers();
-
-                    // Remove assign of arm and chest
-                    AssignTrackerIndex(2, 11);
-                    AssignTrackerIndex(3, 11);
-                    AssignTrackerIndex(4, 11);
-                }
 
                 break;
+
             case 3: // Leg locomotion (legs & chest)
                 SortChestAndLegsTrackers();
 
@@ -288,19 +228,13 @@ public class WalkerTrackerDeviceAllocator : TrackerDeviceAllocator
                 AssignTrackerIndex(2, 11);
                 AssignTrackerIndex(3, 11);
                 break;
-            case 4: // Both arms and legs trackers
-                SortArmLegTrackers();
 
-                // Remove assign of chest
-                AssignTrackerIndex(4, 11);
-                break;
             case 5: // Full body locmotion (Arms, legs, and chest)
                 SortAllTrackers();
                 break;
         }
         // Assign to the tracker objects with script
         AssignDummyToRealTrackObject();
-        stepThreeTrackersAllocated = true;
 
         // Clear data and stop
         base.DoAssignment();
