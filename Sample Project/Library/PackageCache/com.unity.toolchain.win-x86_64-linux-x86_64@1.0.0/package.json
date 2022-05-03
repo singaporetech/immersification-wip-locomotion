@@ -1,0 +1,25 @@
+{
+  "name": "com.unity.toolchain.win-x86_64-linux-x86_64",
+  "displayName": "Toolchain Win Linux x64",
+  "description": "Cross-compilation toolchain to build player target Linux x86_64 on host Windows x86_64",
+  "version": "1.0.0",
+  "unity": "2019.3",
+  "keywords": [
+    "toolchain",
+    "windows",
+    "linux",
+    "cross-compilation"
+  ],
+  "dependencies": {
+    "com.unity.sysroot": "1.0.0",
+    "com.unity.sysroot.linux-x86_64": "1.0.0"
+  },
+  "upmCi": {
+    "footprint": "6753d5f80bec773cf8653f169d229be31e56c4b9"
+  },
+  "repository": {
+    "url": "https://github.com/Unity-Technologies/com.unity.sysroot.git",
+    "type": "git",
+    "revision": "0b6b1770930fd9a6c9365613ff2cba3eb81810dd"
+  }
+}
