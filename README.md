@@ -65,6 +65,6 @@ The study in the paper focuses on WIP setups that only require tracking componen
 
 The code in the [unity-locomotion-scripts](https://github.com/singaporetech/immersification-wip-locomotion/tree/main/unity-locomotion-scripts) folder are Unity C# component scripts that developers can use in a Unity3D project. 
 
-There is also an [example project](https://github.com/singaporetech/immersification-wip-locomotion/tree/main/sample-unity-project) that uses these scripts in a "Hello World"-ish interactive VR environment.
+There is also a [sample-unity-project](https://github.com/singaporetech/immersification-wip-locomotion/tree/main/sample-unity-project) that uses these scripts in a "Hello World"-ish interactive VR environment.
 
 The code can also be treated as a source of information for the implementation details of the various WIP methods discussed in the paper.
