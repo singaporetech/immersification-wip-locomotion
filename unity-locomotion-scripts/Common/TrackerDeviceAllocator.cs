@@ -9,16 +9,15 @@ using UnityEngine.XR;
 using Valve.VR;
 
 /// <summary>
-/// Base class for tracker detection and allocation
-/// Inheritance used by WalkerTrackerDeviceAllocator.cs
+/// Base class for tracker detection and allocation inherited by WalkerTrackerDeviceAllocator.
 /// </summary>
 public class TrackerDeviceAllocator : MonoBehaviour
 {
     public MovementManager movementManager;
 
     [Header("Actual VR track objects")]
-    // To store the tracked object holder of the object
     /// <summary>
+    /// List of all tracked objects.
     /// 0 = left leg * 1 = right leg * 2 = left hand * 3 = right hand * 4 = chest
     /// </summary>
     public List<SteamVR_TrackedObject> trackObjectAssignment = new List<SteamVR_TrackedObject>();
@@ -32,36 +31,37 @@ public class TrackerDeviceAllocator : MonoBehaviour
 
     [Header("Dummy objects")]
     /// <summary>
-    /// The parent containing all the dummy trackers
+    /// Parent object containing all the dummy trackers.
     /// </summary>
     public GameObject dummyTrackerHolder;
+
     /// <summary>
     /// List of dummy trackers.
     /// </summary>
     public List<SteamVR_TrackedObject> dummyAssignment = new List<SteamVR_TrackedObject>();
 
     /// <summary>
-    /// List containing the tracker device Index from the dummy trackers' SteamVR_TrackedObject components.
+    /// List of tracker device indices from the dummy trackers' SteamVR_TrackedObject components.
     /// </summary>
     protected List<uint> trackerDeviceIndex = new List<uint>();
     
     /// <summary>
-    /// The amount of active trackers currently powered on and detected by Steam VR.
+    /// Amount of active trackers currently powered on and detected by Steam VR.
     /// </summary>
     protected uint amtViveTrackers = 0;
 
     /// <summary>
-    /// The minimum of trackers needed for the locomotion controls to work.
+    /// Minimum trackers needed for the locomotion controls to work.
     /// </summary>
     protected uint neededTrackers = 0;
 
     /// <summary>
-    /// The coroutine currently running for assigning of trackers.
+    /// The coroutine currently running for assignment of trackers.
     /// </summary>
     protected Coroutine currCoroutine;
 
     /// <summary>
-    /// Initialize function from Unity
+    /// Implement Unity component Start function to initialize and start the tracker assignment.
     /// </summary>
     protected virtual void Start()
     {
@@ -70,20 +70,18 @@ public class TrackerDeviceAllocator : MonoBehaviour
     }
 
     /// <summary>
-    /// Init function to run on start to resets all values in the script.
+    /// Implement Unity component Init function to reset all values.
     /// </summary>
     protected virtual void Init()
     {
         amtViveTrackers = 0;
         SetNumberOfTrackersNeeded();
-
         trackerDeviceIndex.Clear();
-
         currCoroutine = null;
     }
 
     /// <summary>
-    /// Sets number of trackers required based on movementManager.magnitudeInputType input type.
+    /// Set number of trackers required based on magnitudeInputType from MovementManager.
     /// </summary>
     protected virtual void SetNumberOfTrackersNeeded()
     {
@@ -108,9 +106,9 @@ public class TrackerDeviceAllocator : MonoBehaviour
     }
 
     /// <summary>
-    /// Checks if the VR HMD is wore.
+    /// Check if the VR HMD is currently worn.
     /// </summary>
-    /// <returns>Returns true if presence is detected. False if not.</returns>
+    /// <returns>A boolean: true if worn, false otherwise</returns>
     public virtual bool CheckUserPresence()
     {
         bool userPresent = false;
@@ -124,7 +122,7 @@ public class TrackerDeviceAllocator : MonoBehaviour
     }
 
     /// <summary>
-    /// Search for all active trackers and assigns them to a dummy tracker object for storage.
+    /// Search for all active trackers and assigns them to the dummy tracker object.
     /// </summary>
     protected virtual void GetViveTrackers()
     {
@@ -150,14 +148,14 @@ public class TrackerDeviceAllocator : MonoBehaviour
     }
 
     /// <summary>
-    /// Begins the coroutine that starts assigning the dummy tracker objects to the actual tracked objects.
+    /// Begin the coroutine that starts assigning the dummy tracker objects to the actual tracked objects.
     /// </summary>
     protected virtual void StartAssignment()
     {
         currCoroutine = StartCoroutine(DoAssignment());
     }
 
-    /// <summary>  Assigning tracker index with index</summary>
+    /// <summary>Assigning tracker index with index.</summary>
     /// <param name="trackerIndex">The first index variable</param>
     /// <param name="Index">The second index variable</param>
     protected virtual void AssignTrackerIndex(int trackerIndex, int Index)
@@ -166,18 +164,18 @@ public class TrackerDeviceAllocator : MonoBehaviour
         dummyAssignment[trackerIndex].SetDeviceIndex(Index);
     }
 
-    /// <summary>  Assigning tracker index from the dynamic assign index</summary>
-    /// <param name="trackerIndex">The first index variable</param>
-    /// <param name="dynamicIndex">The second index variable</param>
+    /// <summary>Assigning tracker index from the dynamically assigned index.</summary>
+    /// <param name="trackerIndex">The tracker index to be assigned</param>
+    /// <param name="dynamicIndex">The dynamically assigned index</param>
     protected virtual void AssignTrackerIndexDynamic(int trackerIndex, int dynamicIndex)
     {
         // Assigning the new index
         dummyAssignment[trackerIndex].SetDeviceIndex((int)trackerDeviceIndex[dynamicIndex]);
     }
 
-    /// <summary>  A swap function for swapping the index value and assigning</summary>
-    /// <param name="first">The first index variable</param>
-    /// <param name="second">The second index variable</param>
+    /// <summary>Swap two tracker device indices.</summary>
+    /// <param name="first">The first index</param>
+    /// <param name="second">The second index</param>
     protected virtual void SwapTrackerIndex(int first, int second)
     {
         // Swap Algorithm
@@ -191,8 +189,7 @@ public class TrackerDeviceAllocator : MonoBehaviour
     }
 
     /// <summary>
-    /// Set the real object for tracking and deactivate the dummy tracker
-    /// Update the tracker device
+    /// Assign dummy tracker object to the real object for tracking and deactivate the dummy tracker.
     /// </summary>
     protected virtual void AssignDummyToRealTrackObject()
     {
@@ -203,10 +200,10 @@ public class TrackerDeviceAllocator : MonoBehaviour
         dummyTrackerHolder.SetActive(false);
     }
 
-    /// <summary>  To sort the left and right tracker based off the combined center position</summary>
-    /// <param name="limbType"> 0 = Legs , 2 = Arms </param>
-    /// <param name="left">The suppose left position vector</param>
-    /// <param name="right">The suppose right position vector</param>
+    /// <summary>Sort the left and right tracker based on the combined center position.</summary>
+    /// <param name="limbType">0 = Legs , 2 = Arms </param>
+    /// <param name="left">The supposed left position vector</param>
+    /// <param name="right">The supposed right position vector</param>
     protected virtual void AssignPairTrackers(int limbType, Vector3 left, Vector3 right)
     {
         // Construct a centre position based off the left and right position
@@ -221,19 +218,19 @@ public class TrackerDeviceAllocator : MonoBehaviour
     }
 
     /// <summary>
-    /// Returns true if the distance is more than the amount given.
+    /// Check if the computed distance between two vectors is more than a given distance.
     /// </summary>
-    /// <param name="distance"></param>
-    /// <param name="vecOne"></param>
-    /// <param name="vecTwo"></param>
-    /// <returns></returns>
+    /// <param name="distance">Given distance to check with</param>
+    /// <param name="vecOne">1st of the two vectors</param>
+    /// <param name="vecTwo">2nd of the two vectors</param>
+    /// <returns>A boolean: true if computed difference is more than the given distance, false otherwise</returns>
     protected virtual bool DistanceCheck(float distance, Vector3 vecOne, Vector3 vecTwo)
     {
         return Vector3.Distance(vecOne, vecTwo) >= distance;
     }
 
     /// <summary>
-    /// Base method to be overridden for tracker assignment and setup.
+    /// Default assignment method to be overridden for tracker assignment and setup.
     /// </summary>
     protected virtual IEnumerator DoAssignment()
     {
