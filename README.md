@@ -1,10 +1,39 @@
 # What is this repo?
 
-This repo contains the essential Unity code scripts used to implement the HEAD-BOB, ARM-SWING, LEG-LIFT and FULL-BODY walking-in-place (WIP) methods used in the forthcoming paper on "Understanding User Experiences Across VR Walking-in-place Locomotion Methods".
+This repo contains the essential Unity code scripts used to implement the HEAD-BOB, ARM-SWING, LEG-LIFT and FULL-BODY walking-in-place (WIP) methods used in the paper on "Understanding User Experiences Across VR Walking-in-place Locomotion Methods".
 
-![](https://github.com/singaporetech/immersification-wip-locomotion/blob/main/images/locomotion-setups.jpg)
+## The paper
 
-The paper will be linked once it has been published.
+A quick overview of the essential details of the paper can be see at the pre-recorded CHI'22 presentation below.
+
+[![CHI '22 Video Presentation](https://img.youtube.com/vi/vT0VGSpjBsE/0.jpg)](https://youtu.be/vT0VGSpjBsE)
+
+The paper can be accessed at [ACM DL](https://dl.acm.org/doi/abs/10.1145/3491102.3501975) and you can reference us in LaTeX with the following bibtex:
+
+```
+@inproceedings{10.1145/3491102.3501975,
+    author = {Tan, Chek Tien and Foo, Leon Cewei and Yeo, Adriel and Lee, Jeannie Su Ann and Wan, Edmund and Kok, Xiao-Feng Kenan and Rajendran, Megani},
+    title = {Understanding User Experiences Across VR Walking-in-Place Locomotion Methods},
+    year = {2022},
+    isbn = {9781450391573},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3491102.3501975},
+    doi = {10.1145/3491102.3501975},
+    booktitle = {CHI Conference on Human Factors in Computing Systems},
+    articleno = {517},
+    numpages = {13},
+    keywords = {Virtual Reality, Immersion, Walking-In-Place, Locomotion},
+    location = {New Orleans, LA, USA},
+    series = {CHI '22}
+}
+```
+
+Or copy the formatted text into your document of choice:
+
+```
+Chek Tien Tan, Leon Cewei Foo, Adriel Yeo, Jeannie Su Ann Lee, Edmund Wan, Xiao-Feng Kenan Kok, and Megani Rajendran. 2022. Understanding User Experiences Across VR Walking-in-place Locomotion Methods. In CHI Conference on Human Factors in Computing Systems (CHI '22). Association for Computing Machinery, New York, NY, USA, Article 517, 1–13. https://doi.org/10.1145/3491102.3501975
+```
 
 Essential details (extracted from the paper) for each algorithm are given in the subsections below. Please read the paper for more details on the science behind these implementations, as well as all the associated references that these implementations were built upon. 
 
@@ -34,6 +63,8 @@ The study in the paper focuses on WIP setups that only require tracking componen
 
 # How to use the code
 
-The code in the [unity-locomotion-scripts](https://github.com/singaporetech/immersification-wip-locomotion/tree/main/unity-locomotion-scripts) folder are Unity C# component scripts that developers can use in a Unity3D project. Currently, we do not provide an example project but it should be straightforward for experienced Unity developers to include in their projects.
+The code in the [unity-locomotion-scripts](https://github.com/singaporetech/immersification-wip-locomotion/tree/main/unity-locomotion-scripts) folder are Unity C# component scripts that developers can use in a Unity3D project. 
+
+There is also an [example project](https://github.com/singaporetech/immersification-wip-locomotion/tree/main/sample-unity-project) that uses these scripts in a "Hello World"-ish interactive VR environment.
 
 The code can also be treated as a source of information for the implementation details of the various WIP methods discussed in the paper.
