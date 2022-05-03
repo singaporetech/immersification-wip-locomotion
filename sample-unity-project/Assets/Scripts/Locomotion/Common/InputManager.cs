@@ -5,31 +5,31 @@
 using UnityEngine;
 
 /// <summary>
-/// Base class for inheritance used by arm swing, head bob and leg lift
+/// Base class that contains commonalities inherited by arm swing, head bob and leg lift classes.
 /// </summary>
 public class InputManager : MonoBehaviour
 {
     /// <summary>
-    /// The direction input of this InputManager.
+    /// The input movement direction.
     /// </summary>
     [HideInInspector]
     public Vector3 moveDirection;
 
     /// <summary>
-    /// The speed input of this InputManager.
+    /// The input movment speed.
     /// </summary>
     [HideInInspector]
     public float moveSpeed;
 
     /// <summary>
-    /// The percentage of moveSpeed used when applying movement via the MovementManager.cs.
+    /// The percentage of moveSpeed used when applying movement via the MovementManager.
     /// 0 = 0%, while 1 = 100%
     /// </summary>
     [HideInInspector]
     public float speedPercentage;
 
     /// <summary>
-    /// The percentage of direction used when applying movement via the MovementManager.cs.
+    /// The percentage of direction used when applying movement via the MovementManager.
     /// 0 = 0%, while 1 = 100%
     /// </summary>
     [HideInInspector]
@@ -41,12 +41,12 @@ public class InputManager : MonoBehaviour
     public MovementManager moveManager;
 
     /// <summary>
-    /// The locomotion input type of this InputManager.
+    /// The locomotion input type.
     /// </summary>
     public e_InputType type;
 
     /// <summary>
-    /// Send the direction to movementmanager
+    /// Send the direction to the MovementManager.
     /// </summary>
     public void SendDirection()
     {
@@ -55,7 +55,7 @@ public class InputManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Send the type of movement and speed to movementmanager
+    /// Send the locomotion type and speed to MovementManager.
     /// </summary>
     public void SendMagnitude()
     {
