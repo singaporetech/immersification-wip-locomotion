@@ -6,7 +6,7 @@ This repo contains the essential Unity code scripts used to implement the HEAD-B
 
 A quick overview of the essential details of the paper can be see at the pre-recorded CHI'22 presentation below.
 
-[![CHI '22 Video Presentation](https://img.youtube.com/vi/vT0VGSpjBsE/0.jpg)](https://youtu.be/vT0VGSpjBsE)
+[![CHI '22 Video Presentation](https://github.com/singaporetech/immersification-wip-locomotion/blob/main/images/locomotion-setups.jpg)](https://youtu.be/vT0VGSpjBsE)
 
 The paper can be accessed at [ACM DL](https://dl.acm.org/doi/abs/10.1145/3491102.3501975) and you can reference us in LaTeX with the following bibtex:
 
