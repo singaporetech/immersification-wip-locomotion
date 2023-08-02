@@ -135,8 +135,9 @@ public class TrackerDeviceAllocator : MonoBehaviour
         {
             var result = new System.Text.StringBuilder((int)64);
             OpenVR.System.GetStringTrackedDeviceProperty(i, ETrackedDeviceProperty.Prop_RenderModelName_String, result, 64, ref error);
-
-            if (result.ToString().ToLower().Contains("tracker") && OpenVR.System.IsTrackedDeviceConnected(i) /*&& error == ETrackedPropertyError.TrackedProp_Success*/)
+            
+            // Note: Depending on what tracker and HMD is being used, results string may only contain "tracker" and exclude "vr_"
+            if (result.ToString().ToLower().Contains("vr_tracker") && OpenVR.System.IsTrackedDeviceConnected(i))
             {
                 // Store the information
                 trackerDeviceIndex.Add(i);
