@@ -8,9 +8,11 @@ A quick overview of the essential details of the paper can be see at the pre-rec
 
 [![CHI '22 Video Presentation](https://github.com/singaporetech/immersification-wip-locomotion/blob/main/images/locomotion-setups.jpg)](https://youtu.be/vT0VGSpjBsE)
 
-The paper can be accessed at [ACM DL](https://dl.acm.org/doi/abs/10.1145/3491102.3501975) and you can reference us in LaTeX with the following bibtex:
+A preview of the experience can also be seen in the following video.
 
 https://github.com/singaporetech/immersification-wip-locomotion/assets/3528274/ce3c5ba8-dc9d-457d-b0c8-b28f5d782176
+
+The paper can be accessed at [ACM DL](https://dl.acm.org/doi/abs/10.1145/3491102.3501975) and you can reference us in LaTeX with the following bibtex:
 
 ```
 @inproceedings{10.1145/3491102.3501975,
