@@ -10,6 +10,8 @@ A quick overview of the essential details of the paper can be see at the pre-rec
 
 The paper can be accessed at [ACM DL](https://dl.acm.org/doi/abs/10.1145/3491102.3501975) and you can reference us in LaTeX with the following bibtex:
 
+https://github.com/singaporetech/immersification-wip-locomotion/assets/3528274/ce3c5ba8-dc9d-457d-b0c8-b28f5d782176
+
 ```
 @inproceedings{10.1145/3491102.3501975,
     author = {Tan, Chek Tien and Foo, Leon Cewei and Yeo, Adriel and Lee, Jeannie Su Ann and Wan, Edmund and Kok, Xiao-Feng Kenan and Rajendran, Megani},
